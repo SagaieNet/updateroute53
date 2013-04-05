@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 ###############################################################################################
 ### Script per actualitzar els registres dns de les ip's dinamiques d'instancies Amazon AWS ###
 ###############################################################################################
@@ -28,16 +28,19 @@ do
 	if [ -n "$exists" ]
 	then
 
-		if [ -n "$name" ]
+		if [[ -n "$name" && $ip ]]
 		then
-			echo "Updating $name.$zone with ip $ip"
+			echo "####################################"
+			echo "# Updating $name.$zone with ip $ip #"
+			echo "####################################"
 			/var/lib/gems/1.8/gems/route53-0.2.1/bin/route53 --zone $zone. -g --name $name.$zone. --type A --ttl 60 --values $ip --no-wait
 		fi
-		else
-
-		if [ -n "$name" ]
+	else
+		if [[ -n "$name" && $ip ]]
 		then
-			echo "Creating $name.$zone with ip $ip"
+			echo "####################################"
+			echo "# Creating $name.$zone with ip $ip #"
+			echo "####################################"
 			/var/lib/gems/1.8/gems/route53-0.2.1/bin/route53 --zone $zone. -c --name $name.$zone. --type A --ttl 60 --values $ip --no-wait
 		fi
 
@@ -48,10 +51,14 @@ do
 		cnameexists=`/var/lib/gems/1.8/gems/route53-0.2.1/bin/route53 -l $zone. | awk '{print $1}' | uniq | grep -x $j.$zone.`
 		if [ -n "$cnameexists" ]
 		then
-			echo "Updating CNAME $j.$zone"
+			echo "###########################"
+			echo "# Updating CNAME $j.$zone #"
+			echo "###########################"
 			/var/lib/gems/1.8/gems/route53-0.2.1/bin/route53 --zone $zone. -g --name $j.$zone. --type CNAME --ttl 60 --values $name.$zone --no-wait
 		else
-			echo "Creating CNAME $j.$zone"
+			echo "###########################"
+			echo "# Creating CNAME $j.$zone #"
+			echo "###########################"
 			/var/lib/gems/1.8/gems/route53-0.2.1/bin/route53 --zone $zone. -c --name $j.$zone. --type CNAME --ttl 60 --values $name.$zone --no-wait
 		fi
 	done
